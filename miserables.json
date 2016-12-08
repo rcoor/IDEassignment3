@@ -1,0 +1,28 @@
+{
+  "nodes": [
+    {"id": "Theis", "group": 4, "img": "https://cdnstorage.azurewebsites.net/images/categories/appetite/card.png"},
+    {"id": "Nutrition", "group": 1, "img": "https://cdnstorage.azurewebsites.net/images/categories/appetite/card.png"},
+    {"id": "Fat", "group": 1, "img": "https://cdnstorage.azurewebsites.net/images/categories/appetite/Fat.png"},
+    {"id": "Carbohydrate", "group": 1, "img": "https://dl.dropboxusercontent.com/u/19954023/marvel_force_chart_img/marvel.png"},
+    {"id": "Vitamin C", "group": 1, "img": "https://dl.dropboxusercontent.com/u/19954023/marvel_force_chart_img/marvel.png"},
+    {"id": "Fitness", "group": 2, "img": "https://dl.dropboxusercontent.com/u/19954023/marvel_force_chart_img/marvel.png"},
+    {"id": "Muscle Growth", "group": 2, "img": "https://dl.dropboxusercontent.com/u/19954023/marvel_force_chart_img/marvel.png"},
+    {"id": "Connective Tissue Injury", "group": 2, "img": "https://dl.dropboxusercontent.com/u/19954023/marvel_force_chart_img/marvel.png"},
+    {"id": "Lifestyle", "group": 3, "img": "https://dl.dropboxusercontent.com/u/19954023/marvel_force_chart_img/marvel.png"},
+    {"id": "Appetite", "group": 3, "img": "https://dl.dropboxusercontent.com/u/19954023/marvel_force_chart_img/marvel.png"},
+    {"id": "Caffeine", "group": 3, "img": "https://dl.dropboxusercontent.com/u/19954023/marvel_force_chart_img/marvel.png"}
+  ],
+  "links": [
+    {"source": "Nutrition", "target": "Theis", "value": 20},
+    {"source": "Fat", "target": "Nutrition", "value": 10},
+    {"source": "Carbohydrate", "target": "Nutrition", "value": 10},
+    {"source": "Vitamin C", "target": "Nutrition", "value": 10},
+    {"source": "Fitness", "target": "Theis", "value": 20},
+    {"source": "Muscle Growth", "target": "Fitness", "value": 10},
+    {"source": "Connective Tissue Injury", "target": "Fitness", "value": 10},
+    {"source": "Lifestyle", "target": "Theis", "value": 20},
+    {"source": "Appetite", "target": "Lifestyle", "value": 10},
+    {"source": "Caffeine", "target": "Lifestyle", "value": 10}
+
+  ]
+}
