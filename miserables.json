@@ -23,6 +23,5 @@
     {"source": "Lifestyle", "target": "Theis", "value": 20},
     {"source": "Appetite", "target": "Lifestyle", "value": 10},
     {"source": "Caffeine", "target": "Lifestyle", "value": 10}
-
   ]
 }

@@ -5,7 +5,6 @@
     <meta charset="utf-8">
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <style>
-
         .links line {
             stroke: #687c7f;
             stroke-opacity: 0.6;
@@ -35,16 +34,24 @@
             font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
         }
 
+        .movie-text {
+            fill: tomato;
+        }
+
+        .actor-text {
+            fill: rebeccapurple;
+        }
+
         image {
             border-radius: 50%;
         }
-
     </style>
 </head>
 
 <body>
     <svg width="1000" height="1000"></svg>
     <script>
+
 var svg = d3.select("svg"),
     width = +svg.attr("width"),
     height = +svg.attr("height");
@@ -56,39 +63,94 @@ var svg = d3.select("svg"),
     .append("g")
     .attr("transform", "translate(" + Math.min(width,height) / 2 + "," + Math.min(width,height) / 2 + ")");
 
-var color = d3.scaleOrdinal(d3.schemeCategory20);
-
 var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(function(d) { return d.id; }))
     .force("charge", d3.forceManyBody().strength(-400))
     .force("center", d3.forceCenter(width / 2, height / 2));
 
-d3.json("miserables.json", function(error, graph) {
-  if (error) throw error;
+
+d3.csv(
+    'imdb-5000-movie-dataset.csv',
+    function(d) {
+      d.movie_title = d.movie_title.trim();
+      d.actor_1_name = d.actor_1_name.trim();
+      d.actor_2_name = d.actor_2_name.trim();
+      d.actor_3_name = d.actor_3_name.trim();
+
+      d['id'] = d.movie_title;
+      return d;
+    },
+    function(error, data) {
+      if (error) throw error;
+          data = data.sort(function(a, b) {
+            return parseFloat(b.imdb_score) - parseFloat(a.imdb_score);
+        })
+        .splice(0,100);
+
+        var links = [];
+        var actors = [];
+
+
+        data.forEach((d) => {
+            links.push(
+                { "source": d.actor_1_name, "target": d.movie_title },
+                { "source": d.actor_2_name, "target": d.movie_title },
+                { "source": d.actor_2_name, "target": d.movie_title }
+            );
+            actors.push(d.actor_1_name, d.actor_2_name, d.actor_3_name);
+        });
+
+        actors = actors.filter(function(elem, index, self) {
+            return index == self.indexOf(elem);
+        });
+        actors.forEach((actor) => {
+            data.push(
+                {'id': actor}
+            );
+        });
+
+
+
+        var graph = {
+            "nodes": data,
+            "links": links
+        };
+        console.log(graph);
+
+
 
   var link = svg.append("g")
       .attr("class", "links")
     .selectAll("line")
-    .data(graph.links)
+    .data(links)
     .enter().append("line")
-      .attr("stroke-width", function(d) { return Math.sqrt(d.value); });
+      .attr("stroke-width", 2);
 
   var pre_node = svg.append("g")
       .attr("class", "nodes")
         .selectAll("circle")
-        .data(graph.nodes);
+        .data(data);
 
 
-
-  var text = pre_node.enter().append("text")
+  var actorText = pre_node.enter().append("text")
       .text(function(d) { return d.id; })
+      .attr('class', function(d) {
+          if (!d.movie_title) return 'actor-text';
+      } )
       .style("text-anchor", "middle");
 
+  var movieText = pre_node.enter().append("text")
+      .text(function(d) { return d.id; })
+      .attr('class', function(d) {
+          if (!d.movie_title) return;
+          return 'movie-text';
+      })
+      .style("text-anchor", "middle");
 
 // Append images
   var image = pre_node.enter()
                 .append("svg:image")
-                .attr("xlink:href",  function(d) { return d.img;})
+                .attr("xlink:href",  function(d) { return '' })
                 .attr('x', 0)
                 .attr('y', 0)
                 .attr("height", 40)
@@ -103,13 +165,14 @@ d3.json("miserables.json", function(error, graph) {
           .on("end", dragended));
 
   simulation
-      .nodes(graph.nodes)
+      .nodes(data)
       .on("tick", ticked);
 
   simulation
         .force("link")
-      .links(graph.links)
+      .links(links)
       .distance(distance);
+
 
      function distance() {
         return 80;
@@ -128,14 +191,18 @@ d3.json("miserables.json", function(error, graph) {
 };
 
   function ticked() {
-    text
+    actorText
         .attr("x", function(d) { return d.x; })
         .attr("y", function(d) { return d.y + 35; });
 
+         movieText
+        .attr("x", function(d) { return d.x; })
+        .attr("y", function(d) { return d.y + 35; });
+/*
     image
        .attr("x", function(d) { return d.x - 20; })
         .attr("y", function(d) { return d.y - 20; });
-
+*/
     link
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
