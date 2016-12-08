@@ -34,6 +34,14 @@
             font-family: Arial, "Helvetica Neue", Helvetica, sans-serif;
         }
 
+        circle.actor {
+            fill: #cccccc;
+        }
+
+        circle.movie {
+            fill: #666666;
+        }
+
         .movie-text {
             fill: tomato;
         }
@@ -49,23 +57,24 @@
 </head>
 
 <body>
-    <svg width="1000" height="1000"></svg>
+    <svg width="600" height="600"></svg>
     <script>
 
 var svg = d3.select("svg"),
     width = +svg.attr("width"),
-    height = +svg.attr("height");
+    height = +svg.attr("height"),
+    radius = 10;
 
-    svg.attr("width", '100%')
+    svg
+    /*.attr("width", '100%')
     .attr("height", '100%')
     .attr('viewBox','0 0 '+Math.min(width,height)+' '+Math.min(width,height))
-    .attr('preserveAspectRatio','xMinYMin')
-    .append("g")
-    .attr("transform", "translate(" + Math.min(width,height) / 2 + "," + Math.min(width,height) / 2 + ")");
+    .attr('preserveAspectRatio','xMinYMin')*/
+    .append("g");
 
 var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(function(d) { return d.id; }))
-    .force("charge", d3.forceManyBody().strength(-400))
+    .force("charge", d3.forceManyBody().strength(-4))
     .force("center", d3.forceCenter(width / 2, height / 2));
 
 
@@ -85,7 +94,7 @@ d3.csv(
           data = data.sort(function(a, b) {
             return parseFloat(b.imdb_score) - parseFloat(a.imdb_score);
         })
-        .splice(0,100);
+        .splice(0,50);
 
         var links = [];
         var actors = [];
@@ -95,7 +104,7 @@ d3.csv(
             links.push(
                 { "source": d.actor_1_name, "target": d.movie_title },
                 { "source": d.actor_2_name, "target": d.movie_title },
-                { "source": d.actor_2_name, "target": d.movie_title }
+                { "source": d.actor_3_name, "target": d.movie_title }
             );
             actors.push(d.actor_1_name, d.actor_2_name, d.actor_3_name);
         });
@@ -109,8 +118,6 @@ d3.csv(
             );
         });
 
-
-
         var graph = {
             "nodes": data,
             "links": links
@@ -118,13 +125,12 @@ d3.csv(
         console.log(graph);
 
 
-
   var link = svg.append("g")
       .attr("class", "links")
     .selectAll("line")
     .data(links)
     .enter().append("line")
-      .attr("stroke-width", 2);
+      .attr("stroke-width", 1);
 
   var pre_node = svg.append("g")
       .attr("class", "nodes")
@@ -132,19 +138,12 @@ d3.csv(
         .data(data);
 
 
-  var actorText = pre_node.enter().append("text")
+  var text = pre_node.enter().append("text")
       .text(function(d) { return d.id; })
       .attr('class', function(d) {
           if (!d.movie_title) return 'actor-text';
-      } )
-      .style("text-anchor", "middle");
-
-  var movieText = pre_node.enter().append("text")
-      .text(function(d) { return d.id; })
-      .attr('class', function(d) {
-          if (!d.movie_title) return;
           return 'movie-text';
-      })
+      } )
       .style("text-anchor", "middle");
 
 // Append images
@@ -153,12 +152,16 @@ d3.csv(
                 .attr("xlink:href",  function(d) { return '' })
                 .attr('x', 0)
                 .attr('y', 0)
-                .attr("height", 40)
-                .attr("width", 40);
+                .attr("height", 10)
+                .attr("width", 10);
 
     var node = pre_node
         .enter().append("circle")
-      .attr("r", 20)
+      .attr("r", radius)
+      .attr("class", (d) =>{
+            if (!d.movie_title) return 'actor';
+          return 'movie';
+      })
       .call(d3.drag()
           .on("start", dragstarted)
           .on("drag", dragged)
@@ -171,12 +174,10 @@ d3.csv(
   simulation
         .force("link")
       .links(links)
-      .distance(distance);
+      .distance(40);
 
 
-     function distance() {
-        return 80;
-    }
+
 
     var insertLinebreaks = function (d) {
     var el = d3.select(this);
@@ -191,11 +192,7 @@ d3.csv(
 };
 
   function ticked() {
-    actorText
-        .attr("x", function(d) { return d.x; })
-        .attr("y", function(d) { return d.y + 35; });
-
-         movieText
+    text
         .attr("x", function(d) { return d.x; })
         .attr("y", function(d) { return d.y + 35; });
 /*
@@ -210,9 +207,8 @@ d3.csv(
         .attr("y2", function(d) { return d.target.y; });
 
     node
-        .attr("cx", function(d) { return d.x; })
-        .attr("cy", function(d) { return d.y; });
-
+        .attr("cx", function(d) { return d.x = Math.max(radius, Math.min(width - radius, d.x));  })
+        .attr("cy", function(d){ return d.y = Math.max(radius, Math.min(height - radius, d.y)); });
   }
 });
 
