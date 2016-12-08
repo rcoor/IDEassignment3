@@ -4,6 +4,9 @@
 <head>
     <meta charset="utf-8">
     <script src="https://d3js.org/d3.v4.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi"
+        crossorigin="anonymous">
+
     <style>
         .links line {
             stroke: #687c7f;
@@ -57,10 +60,33 @@
 </head>
 
 <body>
-    <svg width="600" height="600"></svg>
+    <div class="container">
+        <div style=" padding: 60px;">
+            <svg class="container" width="600" height="600"></svg>
+            <hr>
+            <div class="info" style="height: 100px;">
+                <h1></h1>
+                <p></p>
+            </div>
+        </div>
+
+        <h2>
+            Assignment 3
+        </h2>
+        <h3>
+            Part 1
+        </h3>
+        <a href="http://christianlarsen.dk/ku-slg270/ide-project-2/">Reference project to project 2</a>
+        <p>
+            <strong>Positive</strong>
+        </p>
+        <p>
+            <strong>Negative</strong>
+        </p>
+    </div>
     <script>
 
-var svg = d3.select("svg"),
+var svg = d3.select("svg.container"),
     width = +svg.attr("width"),
     height = +svg.attr("height"),
     radius = 10;
@@ -76,7 +102,6 @@ var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(function(d) { return d.id; }))
     .force("charge", d3.forceManyBody().strength(-4))
     .force("center", d3.forceCenter(width / 2, height / 2));
-
 
 d3.csv(
     'imdb-5000-movie-dataset.csv',
@@ -162,10 +187,27 @@ d3.csv(
             if (!d.movie_title) return 'actor';
           return 'movie';
       })
+      .on('mouseover', function(d) {
+          showInfo(d);
+      })
       .call(d3.drag()
           .on("start", dragstarted)
           .on("drag", dragged)
           .on("end", dragended));
+
+    function showInfo(d) {
+        var info = d3.selectAll('.info');
+
+          info
+        .selectAll('h1')
+        .text(d.id);
+
+        info
+        .selectAll('p')
+        .text("IMDB score: "+d.imdb_score);
+
+
+    }
 
   simulation
       .nodes(data)
@@ -230,6 +272,7 @@ function dragended(d) {
 }
 
 </script>
+
 </body>
 
 </html>
