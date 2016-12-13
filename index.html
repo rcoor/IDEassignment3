@@ -1,22 +1,28 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="utf-8">
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-alpha.5/css/bootstrap.min.css" integrity="sha384-AysaV+vQoT3kOAXZkl02PThvDr8HYKPZhNT5h/CXfBThSRXQ6jW5DO2ekP5ViFdi"
         crossorigin="anonymous">
-
     <style>
         .links line {
             stroke: #687c7f;
             stroke-opacity: 0.6;
         }
-
         .nodes circle {
             fill: transparent;
             stroke: black;
             color: black;
+            cursor: pointer;
+        }
+
+        .nodes circle.movie.selected {
+            fill: tomato;
+        }
+
+        .nodes circle.actor.selected {
+            fill: rebeccapurple;
         }
 
         .nodes circle p {
@@ -45,6 +51,10 @@
             fill: #666666;
         }
 
+        li {
+            margin-top: 15px;
+        }
+
         .movie-text {
             fill: tomato;
         }
@@ -61,6 +71,71 @@
 
 <body>
     <div class="container">
+
+        <h2>
+            Assignment 3
+        </h2>
+        <p>By Christian Grüner and Theis Hjalte Thorn Jakobsen, 2016.</p>
+
+        <h3>
+            Part 1
+        </h3>
+        <a href="http://christianlarsen.dk/ku-slg270/ide-project-2/">Reference project to project 2</a>
+
+        <ul>
+            <li>
+                <strong>Could be improved</strong><br> On the bar-chart there is not x- and y-axis, which makes it hard to
+                dechipher what is on each axis. Should be added.
+            </li>
+            <li>
+                <strong>Done well</strong><br> It's immediately clear, in the matrix, which years have temperatures below
+                0 degrees in the first quarter. When looking at a smaller area of the matrix it is quite clear which quarters
+                deviate from other quartes in other years.
+            </li>
+        </ul>
+        <h3>
+            Part 2
+        </h3>
+        <ul>
+            <li>
+                <strong>Dataset</strong><br> For part two we have chosen to use a dataset containing 5000 movies on IMDB.
+                We have filtered the movies to only show top 100 movies based on the IMDB rating.
+                <a href="https://www.google.dk/search?q=imdb+5000+movie+dataset&oq=imdb+5000+&aqs=chrome.1.69i57j0l5.4351j0j7&sourceid=chrome&ie=UTF-8">Link to dataset.</a>                The movies have been imported using d3.csv and assigned nodes and links.
+            </li>
+            <li>
+                <strong>The graph</strong><br> The nodes and links have been used to create a force-directed layout by using
+                d3's forceSimulation. Tweaking on the strength of the force have been done via a trial-and-error approach.
+                <u>See the graph below</u>. <i>Note: the graph is 1000 x 1000 px.</i>
+            </li>
+            <li>
+                <strong>Motivation</strong><br> What makes a movie great? This is a simple investigation in trying to visualize
+                if any of the top 100 movies are influenced by the choice of actor. Simply, do we see the same actor on multiple
+                top 100 movies. An intuiative way of achieving this could have been by using a correlation plot. This graph,
+                however, gives the oppurtunity to do some investigation by dragging around clusters and looking at their
+                actors and movies.
+                <ul>
+                    <li>
+                        <strong>Colors & channels</strong><br> The colors chosen are purple and tomato (orange/red color).
+                        All the movies text have been colored tomato and their respective nodes are dark grey. The actors
+                        names are purple and their respective nodes are light gray, in contrast to the movies dark grey color.
+                        The grey color is neutral, however the dark color contrast significes importants, which naturally
+                        puts the movie as the center node of the clusters. By clicking a node it will expand and take the
+                        color of its respective text. This is to add a level of interactivity. It's clear that you have selected
+                        a node and that the text that appears below the graph is connected to it.</li>
+                    <li>
+                        <strong>Interactivity</strong><br> The graph already holds a level of interactivity. It's possible
+                        to click the movie and actor nodes to get more information about their nodes. The graph could be
+                        improved by showing a list of all the movies (of the top 100) that an actor was in, when clicking
+                        an actor node. The connecting nodes or links could also be highlighted to underline the connection
+                        to the movies. In general the graph could be cleaned up a bit so it would be easier to spot the names
+                        of the actors and the movies. Images of the actors and movie posters could also be added as a visual
+                        aid. The graph could also have been made scalable, however it would be even harder to spot the text
+                        and nodes on a small screen.
+                    </li>
+                </ul>
+            </li>
+        </ul>
+
         <div style=" padding: 60px;">
             <svg class="container" width="1000" height="1000"></svg>
             <hr>
@@ -70,20 +145,10 @@
             </div>
         </div>
 
-        <h2>
-            Assignment 3
-        </h2>
-        <h3>
-            Part 1
-        </h3>
-        <a href="http://christianlarsen.dk/ku-slg270/ide-project-2/">Reference project to project 2</a>
-        <p>
-            <strong>Positive</strong>
-        </p>
-        <p>
-            <strong>Negative</strong>
-        </p>
+        <small style="margin-bottom: 20px;">Sorry for the poorly documented code.</small>
+
     </div>
+
     <script>
 
 var svg = d3.select("svg.container"),
@@ -91,6 +156,7 @@ var svg = d3.select("svg.container"),
     height = +svg.attr("height"),
     radius = 10;
 
+var margin = 10;
     svg
     /*.attr("width", '100%')
     .attr("height", '100%')
@@ -98,11 +164,13 @@ var svg = d3.select("svg.container"),
     .attr('preserveAspectRatio','xMinYMin')*/
     .append("g");
 
+// Set up the d3 force simulation, charge, position of center
 var simulation = d3.forceSimulation()
     .force("link", d3.forceLink().id(function(d) { return d.id; }))
     .force("charge", d3.forceManyBody().strength(-4))
     .force("center", d3.forceCenter(width / 2, height / 2));
 
+// Load data from csv file
 d3.csv(
     'imdb-5000-movie-dataset.csv',
     function(d) {
@@ -114,6 +182,10 @@ d3.csv(
       d['id'] = d.movie_title;
       return d;
     },
+    // Here the data is transform to create source and target.
+    // Data is sorted by IMDB score.
+    // Each object contains three actors and a movie.
+    // Links are created by linking all three actors to their movie.
     function(error, data) {
       if (error) throw error;
           data = data.sort(function(a, b) {
@@ -124,7 +196,7 @@ d3.csv(
         var links = [];
         var actors = [];
 
-
+        // Creating links array and getting all actors
         data.forEach((d) => {
             links.push(
                 { "source": d.actor_1_name, "target": d.movie_title },
@@ -134,22 +206,59 @@ d3.csv(
             actors.push(d.actor_1_name, d.actor_2_name, d.actor_3_name);
         });
 
+        // Create nodes of actors
         actors = actors.filter(function(elem, index, self) {
             return index == self.indexOf(elem);
         });
+        // Each nodes id is the name of the actor
         actors.forEach((actor) => {
             data.push(
                 {'id': actor}
             );
         });
 
+        // The graph array contain a node array with movies combined with actors and a links array containing
+        // source and target for each actor to their movies.
         var graph = {
             "nodes": data,
             "links": links
         };
-        console.log(graph);
 
 
+// Set a title at the top of the svg container
+var title = svg.append("g")
+.append("text")
+.html("<strong>Top 100</strong> IMDB movies and their actors")
+.style("font-size","14px")
+    .attr("x", 0)
+    .attr("y", margin+10);
+
+// A labels array showing chosen color and type
+var labels = [{"type": "movie", "color": "tomato"}, {"type": "actor", "color": "rebeccapurple"}];
+
+// Create labels
+var labelIcons = svg.append("g")
+.selectAll("g")
+.data(labels)
+.enter();
+
+// Position label text
+    labelIcons
+    .append("text")
+.text((d) => d.type)
+    .attr("x", 25)
+    .attr("y", (d, i) => i*20+10+height-100);
+
+// Position label group indicators
+labelIcons
+.append("rect")
+.attr("width", 10)
+.attr("height", 10)
+.attr("fill", (d) => d.color)
+.attr("x", 10)
+.attr("y", (d, i) => i*20+height-100);
+
+// Create the links as lines
   var link = svg.append("g")
       .attr("class", "links")
     .selectAll("line")
@@ -157,12 +266,13 @@ d3.csv(
     .enter().append("line")
       .attr("stroke-width", 1);
 
+// Setup a "pre-node" for reference
   var pre_node = svg.append("g")
       .attr("class", "nodes")
         .selectAll("circle")
         .data(data);
 
-
+// Add text elements for each node
   var text = pre_node.enter().append("text")
       .text(function(d) { return d.id; })
       .attr('class', function(d) {
@@ -171,15 +281,7 @@ d3.csv(
       } )
       .style("text-anchor", "middle");
 
-// Append images
-  var image = pre_node.enter()
-                .append("svg:image")
-                .attr("xlink:href",  function(d) { return '' })
-                .attr('x', 0)
-                .attr('y', 0)
-                .attr("height", 10)
-                .attr("width", 10);
-
+    // append circles for each node
     var node = pre_node
         .enter().append("circle")
       .attr("r", radius)
@@ -187,67 +289,72 @@ d3.csv(
             if (!d.movie_title) return 'actor';
           return 'movie';
       })
-      .on('mouseover', function(d) {
+      // Add interactivity on click
+      .on('click', function(d) {
           showInfo(d);
+
+          // reset size on all nodes
+          node
+          .attr("r", radius)
+          .classed("selected", false);
+
+          // set size on selected nod
+          d3.select(this)
+          .attr("r", 20)
+          .classed("selected", true);
       })
+      // Make the nodes dragable
       .call(d3.drag()
           .on("start", dragstarted)
           .on("drag", dragged)
           .on("end", dragended));
 
+    // Funciton for displaying info about clicked movies or actors
     function showInfo(d) {
+        // This sections all manipulates an area outside the svg container
+        console.log(d);
         var info = d3.selectAll('.info');
-
+        if(d.imdb_score) {
           info
         .selectAll('h1')
-        .text(d.id);
-
+        .text("Movie: "+d.id);
         info
         .selectAll('p')
-        .text("IMDB score: "+d.imdb_score);
+        .text("IMDB score: "+d.imdb_score)
+        .append("text")
+        .html("<br>Top 3 actors: "+d.actor_1_name+", "+ d.actor_2_name+" & "+d.actor_3_name + "<br>");
+        } else {
 
-
+        info
+        .selectAll('h1')
+        .text("Actor: "+d.id);
+        info
+        .selectAll('p')
+        .text("");
+        }
     }
 
+    // Add nodes to the simulation
   simulation
       .nodes(data)
       .on("tick", ticked);
 
+// Add links to the simulation and define distance
   simulation
     .force("link")
       .links(links)
       .distance(40);
 
-
-
-
-    var insertLinebreaks = function (d) {
-    var el = d3.select(this);
-    var words = d.split(' ');
-    el.text('');
-
-    for (var i = 0; i < words.length; i++) {
-        var tspan = el.append('tspan').text(words[i]);
-        if (i > 0)
-            tspan.attr('x', 0).attr('dy', '15');
-    }
-};
-
+// function for setting text, link and node position.
   function ticked() {
     text
         .attr("x", function(d) { return d.x; })
         .attr("y", function(d) { return d.y + 35; });
-/*
-    image
-       .attr("x", function(d) { return d.x - 20; })
-        .attr("y", function(d) { return d.y - 20; });
-*/
     link
         .attr("x1", function(d) { return d.source.x; })
         .attr("y1", function(d) { return d.source.y; })
         .attr("x2", function(d) { return d.target.x; })
         .attr("y2", function(d) { return d.target.y; });
-
     node
         .attr("cx", function(d) { return d.x = Math.max(radius, Math.min(width - radius, d.x));  })
         .attr("cy", function(d){ return d.y = Math.max(radius, Math.min(height - radius, d.y)); });
@@ -260,19 +367,18 @@ function dragstarted(d) {
   d.fy = d.y;
 }
 
+// Get continuous information about x and y position of dragged element
 function dragged(d) {
   d.fx = d3.event.x;
   d.fy = d3.event.y;
 }
+
 
 function dragended(d) {
   if (!d3.event.active) simulation.alphaTarget(0);
   d.fx = null;
   d.fy = null;
 }
-
 </script>
-
 </body>
-
 </html>
