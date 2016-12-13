@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <meta charset="utf-8">
     <script src="https://d3js.org/d3.v4.min.js"></script>
@@ -10,6 +11,7 @@
             stroke: #687c7f;
             stroke-opacity: 0.6;
         }
+
         .nodes circle {
             fill: transparent;
             stroke: black;
@@ -172,7 +174,7 @@ var simulation = d3.forceSimulation()
 
 // Load data from csv file
 d3.csv(
-    'imdb-5000-movie-dataset.csv',
+    './imdb-5000-movie-dataset.csv',
     function(d) {
       d.movie_title = d.movie_title.trim();
       d.actor_1_name = d.actor_1_name.trim();
@@ -228,8 +230,9 @@ d3.csv(
 // Set a title at the top of the svg container
 var title = svg.append("g")
 .append("text")
-.html("<strong>Top 100</strong> IMDB movies and their actors")
+.text("Top 100 IMDB movies and their actors")
 .style("font-size","14px")
+.style("font-weight","bold")
     .attr("x", 0)
     .attr("y", margin+10);
 
@@ -381,4 +384,5 @@ function dragended(d) {
 }
 </script>
 </body>
+
 </html>
